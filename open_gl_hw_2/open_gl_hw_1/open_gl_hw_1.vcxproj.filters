@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="append_example2.cpp">
+    <ClCompile Include="InitShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="InitShader.cpp">
+    <ClCompile Include="opengl_spiral.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
