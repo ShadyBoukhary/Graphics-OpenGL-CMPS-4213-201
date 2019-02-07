@@ -18,7 +18,7 @@
     <ClCompile Include="InitShader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="opengl_spiral.cpp">
+    <ClCompile Include="open_gl_maze.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

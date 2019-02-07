@@ -5,8 +5,10 @@
 // OpenGL Spiral
 
 #include "Angel.h"
+#include <random>
+#include <time.h>
 
-const int MatrixDims = 33; // change this to add more spirals
+const int MatrixDims = 50; // change this to add more spirals
 const double CellDim = 2.0 / (MatrixDims);
 const int NumPoints = MatrixDims * MatrixDims * 4;
 const double CenterOffset = 0.5 * CellDim;
@@ -22,8 +24,70 @@ struct Cell {
 	bool isVisited;
 	bool southWall;
 	bool eastWall;
-	Cell() : isVisited(false), southWall(false), eastWall(false) {}
+	Cell() : isVisited(false), southWall(true), eastWall(true) {}
 };
+bool allVisited(int i, int j, Cell cells[][MatrixDims]) {
+
+	return (i + 1 >= MatrixDims || cells[i + 1][j].isVisited) && 
+		(i - 1 < 1 || cells[i - 1][j].isVisited) &&
+		(j + 1 >= MatrixDims || cells[i][j + 1].isVisited) &&
+		(j - 1 < 1 || cells[i][j - 1].isVisited);
+}
+
+vec2 findNeighbor(int i, int j, Cell cells[][MatrixDims]) {
+	if (!allVisited(i, j, cells)) {
+
+		bool found = false;
+		while (true) {
+			int num = rand() % 4 + 1;
+			if (num == 1 && i + 1 < MatrixDims && !cells[i + 1][j].isVisited) {
+				cells[i][j].southWall = false;	// open south gate of current cell
+				return vec2(i + 1, j);
+			}
+			else if (num == 2 && i - 1 >= 1 && !cells[i - 1][j].isVisited) {
+				cells[i - 1][j].southWall = false;	// open south gate
+				return vec2(i - 1, j);
+			}
+			else if (num == 3 && j + 1 < MatrixDims && !cells[i][j + 1].isVisited) {
+				cells[i][j].eastWall = false;
+				return vec2(i, j + 1);
+			}
+			else if (num == 4 && j - 1 >= 1 && !cells[i][j - 1].isVisited) {
+				cells[i][j - 1].eastWall = false;	// open gate of neighbor behind current column
+				return vec2(i, j - 1);
+			}
+		}
+	}
+
+	return vec2(-1, -1);
+}
+void visit(int i, int j, Cell cells[][MatrixDims]) {
+	vec2 neighbor = findNeighbor(i, j, cells);
+	cells[i][j].isVisited = true;
+	while (neighbor.x != -1) {
+		visit(neighbor.x, neighbor.y, cells);
+		neighbor = findNeighbor(i, j, cells);
+	}
+}
+
+void constructMaze(Cell cells[][MatrixDims]) {
+	srand(time(0));
+	// pick a starting point to traverse from
+	int i = rand() % (MatrixDims - 1) + 1;
+	int j = rand() % (MatrixDims - 1) + 1;
+
+	// open a starting point on western wall
+	int row = rand() % (MatrixDims - 1) + 1;
+	int column = 0;
+	cells[row][column].eastWall = false;
+
+	// open an end point on eastern wall
+	row = rand() % (MatrixDims - 1) + 1;
+	column = MatrixDims - 1;
+	cells[row][column].eastWall = false;
+	visit(i, j, cells);
+
+}
 
 int main(int argc, char **argv )
 {
@@ -37,7 +101,7 @@ int main(int argc, char **argv )
     glutInitContextVersion( 3, 2 );
     glutInitContextProfile( GLUT_CORE_PROFILE );
 	glewExperimental = GL_TRUE;
-    glutCreateWindow( "Sierpinski Gasket" );
+    glutCreateWindow( "Maze Generator" );
 
     glewInit();
 
@@ -56,22 +120,18 @@ void init()
 
 	for (int i = 0; i < MatrixDims; i++)
 		for (int j = 0; j < MatrixDims; j++) {
-			if ((i == 0 || i == MatrixDims - 1) && j != 0) {
-				cells[i][j].southWall = true;
-				cells[i][j].isVisited = true;
-			}
-			if ((j == 0 || j == MatrixDims - 1) && i != 0) {
-				cells[i][j].eastWall = true;
+			if (i == 0) {
+				cells[i][j].eastWall = false;
 				cells[i][j].isVisited = true;
 			}
 
-			if (i != 0 && j != 0) {
-				cells[i][j].southWall = true;
-				cells[i][j].eastWall = true;
+			if (j == 0) {
+				cells[i][j].southWall = false;
+				cells[i][j].isVisited = true;
 			}
 		}
 
-
+	constructMaze(cells);
 	vec2 points[NumPoints];
 	int currentPoint = 0;
 
@@ -97,21 +157,6 @@ void init()
 		}
 	}
 
-	// compute all points per spiral
-	//for (int i = 0; i < NumSpirals; i++) {
-
-	//	// first half of the spiral
-	//	points[pointIdx] = vec2(points[pointIdx - 1].x + hop, points[pointIdx - 1].y);
-	//	points[pointIdx + 1] = vec2(points[pointIdx].x, points[pointIdx].y - hop);
-	//	hop = hop + HopSize;
-
-	//	// second half of the spiral
-	//	points[pointIdx + 2] = vec2(points[pointIdx + 1].x - hop, points[pointIdx + 1].y);
-	//	points[pointIdx + 3] = vec2(points[pointIdx + 2].x, points[pointIdx + 2].y + hop);
-
-	//	pointIdx += 4;
-	//	hop = hop + HopSize;
-	//}
 
 	// Create a vertex array object
 	GLuint vao;
