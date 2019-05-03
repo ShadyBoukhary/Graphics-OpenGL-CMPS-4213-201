@@ -1,7 +1,7 @@
 ﻿// Shady Boukhary
 // Intro to Graphics
 // Dr. Simpson
-// April 1sth, 2019
+// May 3rd, 2019
 //
 // Renders 2 cans on a table. Uses textures.
 
